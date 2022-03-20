@@ -1,6 +1,6 @@
 class SanctionUSAVessel:
 
-    def __init__(self, callSign='', vesselType='', vesselFlag='', vesselOwner='', tonnage=0, grossRegisteredTonnage=0):
+    def __init__(self, callSign='', vesselType='', vesselFlag='', vesselOwner='', tonnage='', grossRegisteredTonnage=''):
         self.grossRegisteredTonnage = grossRegisteredTonnage
         self.tonnage = tonnage
         self.vesselOwner = vesselOwner
