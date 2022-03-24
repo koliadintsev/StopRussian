@@ -1,6 +1,6 @@
 from lxml import etree
-from DataModel.USA import sanction_USA, sanction_USA_vessel, sanction_USA_aka, sanction_USA_address, \
-    sanction_USA_document, sanction_USA_nationality, sanction_USA_placeofbirth, sanction_USA_dateofbirth
+from DataModel.UK import sanction_UK, sanction_UK_individual, sanction_UK_name, sanction_UK_indicator, \
+    sanction_UK_address, sanction_UK_Entity
 from settings import STATIC_ROOT
 
 SANCTIONS_LIST = STATIC_ROOT + "/Sanctions/UK/UK_Sanctions_List.xml"
@@ -11,7 +11,7 @@ def import_data_from_xml():
     global sanctions
     #parser = etree.XMLParser(recover=True, huge_tree=True)
 
-    for event, element in etree.iterparse(SANCTIONS_LIST, tag="{http://tempuri.org/sdnList.xsd}sdnEntry", recover=True, huge_tree=True, ):
+    for event, element in etree.iterparse(SANCTIONS_LIST, tag="Designation", recover=True, huge_tree=True, ):
         import_data_from_element(element)
         element.clear()
 
@@ -28,168 +28,211 @@ def import_data_from_xml():
 def import_data_from_element(doc):
     global sanctions
 
-    uid = 0
-    firstName = ''
-    lastName = ''
-    title = ''
-    sdnType = ''
-    remarks = ''
-    programList = []
-    idList = []
-    akaList = []
-    addressList = []
-    nationalityList = []
-    citizenshipList = []
-    dateOfBirthList = []
-    placeOfBirthList = []
-    vesselInfo = []
+    LastUpdated = ''
+    DateDesignated = ''
+    UniqueID = ''
+    OFSIGroupID = ''
+    UNReferenceNumber = ''
+    RegimeName = ''
+    Names = []
+    NonLatinNames = []
+    IndividualEntityShip = ''
+    DesignationSource = ''
+    SanctionsImposed=''
+    SanctionsImposedIndicators = []
+    OtherInformation = ''
+    UKStatementofReasons = ''
+    Addresses = []
+    PhoneNumbers = []
+    EmailAddresses = []
+    IndividualDetails = []
+    EntityDetails = []
 
-    sanction = sanction_USA.SanctionUSA()
+    sanction = sanction_UK.SanctionUK()
 
     for item in doc.getchildren():
-        item.tag=item.tag.split('}')[-1]
-        if item.tag == 'uid':
-            uid = int(item.text)
-        elif item.tag == 'firstName':
-            firstName = item.text
-        elif item.tag == 'lastName':
-            lastName = item.text
-        elif item.tag == 'title':
-            title = item.text
-        elif item.tag == 'sdnType':
-            sdnType = item.text
-        elif item.tag == 'remarks':
-            remarks = item.text
-        elif item.tag == 'programList':
+        #item.tag=item.tag.split('}')[-1]
+        if item.tag == 'LastUpdated':
+            LastUpdated = item.text
+        elif item.tag == 'DateDesignated':
+            DateDesignated = item.text
+        elif item.tag == 'UniqueID':
+            UniqueID = item.text
+        elif item.tag == 'OFSIGroupID':
+            OFSIGroupID = item.text
+        elif item.tag == 'UNReferenceNumber':
+            UNReferenceNumber = item.text
+        elif item.tag == 'RegimeName':
+            RegimeName = item.text
+        elif item.tag == 'Names':
             for child in item.getchildren():
-                programList.append(child.text)
-        elif item.tag == 'idList':
-            for child in item.getchildren():
-                document = sanction_USA_document.SanctionUSADocument()
+                name = sanction_UK_name.SanctionUKName()
                 for c in child.getchildren():
-                    c.tag = c.tag.split('}')[-1]
-                    if c.tag == 'uid':
-                        document.uid = int(c.text)
-                    elif c.tag == 'idType':
-                        document.idType = c.text
-                    elif c.tag == 'issueDate':
-                        document.issueDate = c.text
-                    elif c.tag == 'expirationDate':
-                        document.expirationDate = c.text
-                    elif c.tag == 'idNumber':
-                        document.idNumber = c.text
-                    elif c.tag == 'idCountry':
-                        document.idCountry = c.text
-                idList.append(document)
-        elif item.tag == 'akaList':
+                    if c.tag == 'NameType':
+                        name.NameType = c.text
+                    elif c.tag == 'AliasStrength':
+                        name.AliasStrength = c.text
+                    else:
+                        t = name.Name + c.text + ' '
+                        name.Name = t
+                Names.append(name)
+        elif item.tag == 'NonLatinNames':
             for child in item.getchildren():
-                aka = sanction_USA_aka.SanctionUSAAka()
                 for c in child.getchildren():
-                    c.tag = c.tag.split('}')[-1]
-                    if c.tag == 'uid':
-                        aka.uid = int(c.text)
-                    elif c.tag == 'type':
-                        aka.type = c.text
-                    elif c.tag == 'lastName':
-                        aka.lastName = c.text
-                    elif c.tag == 'firstName':
-                        aka.firstName = c.text
-                    elif c.tag == 'category':
-                        aka.category = c.text
-                akaList.append(aka)
-        elif item.tag == 'addressList':
+                    if c.text != '':
+                        NonLatinNames.append(c.text)
+        elif item.tag == 'IndividualEntityShip':
+            IndividualEntityShip=item.text
+        elif item.tag == 'DesignationSource':
+            DesignationSource=item.text
+        elif item.tag == 'OtherInformation':
+            OtherInformation=item.text
+        elif item.tag == 'UKStatementofReasons':
+            UKStatementofReasons=item.text
+        elif item.tag == 'SanctionsImposed':
+            SanctionsImposed = item.text
+        elif item.tag == 'SanctionsImposedIndicators':
+            indicator = sanction_UK_indicator.SanctionUKIndicator()
             for child in item.getchildren():
-                child.tag = child.tag.split('}')[-1]
-                address = sanction_USA_address.SanctionUSAAddress()
-                for c in child.getchildren():
-                    c.tag = c.tag.split('}')[-1]
-                    if c.tag == 'uid':
-                        address.uid = int(c.text)
-                    elif c.tag == 'address1':
-                        address.address1 = c.text
-                    elif c.tag == 'address2':
-                        address.address2 = c.text
-                    elif c.tag == 'address3':
-                        address.address3 = c.text
-                    elif c.tag == 'country':
-                        address.country = c.text
-                    elif c.tag == 'city':
-                        address.city = c.text
-                    elif c.tag == 'postalCode':
-                        address.postalCode = c.text
-                    elif c.tag == 'stateOrProvince':
-                        address.stateOrProvince = c.text
-                addressList.append(address)
-        elif item.tag == 'nationalityList':
+                if child.tag == 'TechnicalAssistanceRelatedToAircraft':
+                    result = False
+                    if child.text == 'true':
+                        result = True
+                    indicator.TechnicalAssistanceRelatedToAircraft = result
+                elif child.tag == 'PreventionOfCharteringOfShipsAndAircraft':
+                    result = False
+                    if child.text == 'true':
+                        result = True
+                    indicator.PreventionOfCharteringOfShipsAndAircraft = result
+                elif child.tag == 'PreventionOfCharteringOfShips':
+                    result = False
+                    if child.text == 'true':
+                        result = True
+                    indicator.PreventionOfCharteringOfShips = result
+                elif child.tag == 'TravelBan':
+                    result = False
+                    if child.text == 'true':
+                        result = True
+                    indicator.TravelBan = result
+                elif child.tag == 'ProhibitionOfPortEntry':
+                    result = False
+                    if child.text == 'true':
+                        result = True
+                    indicator.ProhibitionOfPortEntry = result
+                elif child.tag == 'PreventionOfBusinessArrangements':
+                    result = False
+                    if child.text == 'true':
+                        result = True
+                    indicator.PreventionOfBusinessArrangements = result
+                elif child.tag == 'Deflag':
+                    result = False
+                    if child.text == 'true':
+                        result = True
+                    indicator.Deflag = result
+                elif child.tag == 'CrewServicingOfShipsAndAircraft':
+                    result = False
+                    if child.text == 'true':
+                        result = True
+                    indicator.CrewServicingOfShipsAndAircraft = result
+                elif child.tag == 'ClosureOfRepresentativeOffices':
+                    result = False
+                    if child.text == 'true':
+                        result = True
+                    indicator.ClosureOfRepresentativeOffices = result
+                elif child.tag == 'CharteringOfShips':
+                    result = False
+                    if child.text == 'true':
+                        result = True
+                    indicator.CharteringOfShips = result
+                elif child.tag == 'TargetedArmsEmbargo':
+                    result = False
+                    if child.text == 'true':
+                        result = True
+                    indicator.TargetedArmsEmbargo = result
+                elif child.tag == 'ArmsEmbargo':
+                    result = False
+                    if child.text == 'true':
+                        result = True
+                    indicator.ArmsEmbargo = result
+                elif child.tag == 'AssetFreeze':
+                    result = False
+                    if child.text == 'true':
+                        result = True
+                    indicator.AssetFreeze = result
+            SanctionsImposedIndicators.append(indicator)
+        elif item.tag == 'Addresses':
             for child in item.getchildren():
-                nationality = sanction_USA_nationality.SanctionUSANationality()
+                address = sanction_UK_address.SanctionUKAddress()
                 for c in child.getchildren():
-                    c.tag = c.tag.split('}')[-1]
-                    if c.tag == 'uid':
-                        nationality.uid = int(c.text)
-                    elif c.tag == 'country':
-                        nationality.country = c.text
-                    elif c.tag == 'mainEntry':
-                        nationality.mainEntry = bool(c.text)
-                nationalityList.append(nationality)
-        elif item.tag == 'citizenshipList':
+                    if c.tag == 'AddressCountry':
+                        address.AddressCountry = c.text
+                    else:
+                        t = address.Address + c.text + '; '
+                        address.Address = t
+                Addresses.append(address)
+        elif item.tag == 'PhoneNumbers':
             for child in item.getchildren():
-                citizenship = sanction_USA_nationality.SanctionUSANationality()
-                for c in child.getchildren():
-                    c.tag = c.tag.split('}')[-1]
-                    if c.tag == 'uid':
-                        citizenship.uid = int(c.text)
-                    elif c.tag == 'country':
-                        citizenship.country = c.text
-                    elif c.tag == 'mainEntry':
-                        citizenship.mainEntry = bool(c.text)
-                citizenshipList.append(citizenship)
-        elif item.tag == 'dateOfBirthList':
+                if child.text != '':
+                    PhoneNumbers.append(child.text)
+        elif item.tag == 'EmailAddresses':
             for child in item.getchildren():
-                dateOfBirth = sanction_USA_dateofbirth.SanctionUSADateOfBirth()
-                for c in child.getchildren():
-                    c.tag = c.tag.split('}')[-1]
-                    if c.tag == 'uid':
-                        dateOfBirth.uid = int(c.text)
-                    elif c.tag == 'dateOfBirth':
-                        dateOfBirth.dateOfBirth = c.text
-                    elif c.tag == 'mainEntry':
-                        dateOfBirth.mainEntry = bool(c.text)
-                dateOfBirthList.append(dateOfBirth)
-        elif item.tag == 'placeOfBirthList':
+                if child.text != '':
+                    EmailAddresses.append(child.text)
+        elif item.tag == 'IndividualDetails':
             for child in item.getchildren():
-                placeOfBirth = sanction_USA_placeofbirth.SanctionUSAPlaceOfBirth()
+                individual = sanction_UK_individual.SanctionUKIndividual()
                 for c in child.getchildren():
-                    c.tag = c.tag.split('}')[-1]
-                    if c.tag == 'uid':
-                        placeOfBirth.uid = int(c.text)
-                    elif c.tag == 'placeOfBirth':
-                        placeOfBirth.placeOfBirth = c.text
-                    elif c.tag == 'mainEntry':
-                        placeOfBirth.mainEntry = bool(c.text)
-                placeOfBirthList.append(placeOfBirth)
-        elif item.tag == 'vesselInfo':
+                    if c.tag == 'DOBs':
+                        for dob in c.getchildren():
+                            individual.DOB.append(dob.text)
+                    elif c.tag == 'PassportDetails':
+                        for passport in c.getchildren():
+                            t = ''
+                            for detail in passport.getchildren():
+                                t = t + detail.text + '; '
+                            individual.PassportDetails.append(t)
+                    elif c.tag == 'Nationalities':
+                        for nationality in c.getchildren():
+                            individual.Nationalities.append(nationality.text)
+                    elif c.tag == 'NationalIdentifierDetails':
+                        for passport in c.getchildren():
+                            t = ''
+                            for detail in passport.getchildren():
+                                t = t + detail.text + '; '
+                            individual.NationalIdentifierDetails.append(t)
+                    elif c.tag == 'BirthDetails':
+                        for passport in c.getchildren():
+                            t = ''
+                            for detail in passport.getchildren():
+                                t = t + detail.text + '; '
+                            individual.BirthDetails.append(t)
+                    elif c.tag == 'Positions':
+                        for position in c.getchildren():
+                            individual.Positions.append(position.text)
+                    elif c.tag == 'Genders':
+                        for position in c.getchildren():
+                            individual.Gender = position.text
+                IndividualDetails.append(individual)
+        elif item.tag == 'EntityDetails':
             for child in item.getchildren():
-                vessel = sanction_USA_vessel.SanctionUSAVessel()
+                entity = sanction_UK_Entity.SanctionUKEntity()
                 for c in child.getchildren():
-                    c.tag = c.tag.split('}')[-1]
-                    if c.tag == 'uid':
-                        vessel.uid = int(c.text)
-                    elif c.tag == 'vesselOwner':
-                        vessel.vesselOwner = c.text
-                    elif c.tag == 'vesselType':
-                        vessel.vesselType = c.text
-                    elif c.tag == 'vesselFlag':
-                        vessel.vesselFlag = c.text
-                    elif c.tag == 'tonnage':
-                        vessel.tonnage = c.text
-                    elif c.tag == 'callSign':
-                        vessel.callSign = c.text
-                    elif c.tag == 'grossRegisteredTonnage':
-                        vessel.grossRegisteredTonnage = c.text
-                vesselInfo.append(vessel)
-    sanction = sanction_USA.SanctionUSA(uid, firstName, lastName, title, sdnType, remarks, programList, idList,
-                                        akaList, addressList, nationalityList, citizenshipList, dateOfBirthList,
-                                        placeOfBirthList, vesselInfo)
+                    if c.tag == 'ParentCompanies':
+                        for company in c.getchildren():
+                            entity.ParentCompanies.append(company.text)
+                    elif c.tag == 'BusinessRegistrationNumbers':
+                        for company in c.getchildren():
+                            entity.BusinessRegistrationNumbers.append(company.text)
+                    elif c.tag == 'TypeOfEntities':
+                        for company in c.getchildren():
+                            entity.TypeOfEntities.append(company.text)
+                    elif c.tag == 'Subsidiaries':
+                        for company in c.getchildren():
+                            entity.Subsidiaries.append(company.text)
+                EntityDetails.append(entity)
+    sanction = sanction_UK.SanctionUK(LastUpdated, DateDesignated, UniqueID, OFSIGroupID, UNReferenceNumber, RegimeName,
+                 Names, NonLatinNames, IndividualEntityShip, DesignationSource, SanctionsImposed,
+                 SanctionsImposedIndicators, OtherInformation, UKStatementofReasons, Addresses,
+                 PhoneNumbers, EmailAddresses, IndividualDetails, EntityDetails)
     sanctions.append(sanction)
-    #print(str(uid) + ' added successfully')
+    print(UniqueID + ' added successfully')

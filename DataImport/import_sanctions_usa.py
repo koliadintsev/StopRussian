@@ -135,7 +135,10 @@ def import_data_from_element(doc):
                     elif c.tag == 'country':
                         nationality.country = c.text
                     elif c.tag == 'mainEntry':
-                        nationality.mainEntry = bool(c.text)
+                        result = False
+                        if c.text == 'true':
+                            result = True
+                        nationality.mainEntry = result
                 nationalityList.append(nationality)
         elif item.tag == 'citizenshipList':
             for child in item.getchildren():
@@ -147,7 +150,10 @@ def import_data_from_element(doc):
                     elif c.tag == 'country':
                         citizenship.country = c.text
                     elif c.tag == 'mainEntry':
-                        citizenship.mainEntry = bool(c.text)
+                        result = False
+                        if c.text == 'true':
+                            result = True
+                        citizenship.mainEntry = result
                 citizenshipList.append(citizenship)
         elif item.tag == 'dateOfBirthList':
             for child in item.getchildren():
@@ -159,7 +165,10 @@ def import_data_from_element(doc):
                     elif c.tag == 'dateOfBirth':
                         dateOfBirth.dateOfBirth = c.text
                     elif c.tag == 'mainEntry':
-                        dateOfBirth.mainEntry = bool(c.text)
+                        result = False
+                        if c.text == 'true':
+                            result = True
+                        dateOfBirth.mainEntry = result
                 dateOfBirthList.append(dateOfBirth)
         elif item.tag == 'placeOfBirthList':
             for child in item.getchildren():
@@ -171,7 +180,10 @@ def import_data_from_element(doc):
                     elif c.tag == 'placeOfBirth':
                         placeOfBirth.placeOfBirth = c.text
                     elif c.tag == 'mainEntry':
-                        placeOfBirth.mainEntry = bool(c.text)
+                        result = False
+                        if c.text == 'true':
+                            result = True
+                        placeOfBirth.mainEntry = result
                 placeOfBirthList.append(placeOfBirth)
         elif item.tag == 'vesselInfo':
             for child in item.getchildren():
