@@ -3,7 +3,8 @@ class SanctionUK:
     def __init__(self, LastUpdated='', DateDesignated='', UniqueID='', OFSIGroupID='', UNReferenceNumber='', RegimeName='',
                  Names=None, NonLatinNames=None, IndividualEntityShip='', DesignationSource='', SanctionsImposed='',
                  SanctionsImposedIndicators=None, OtherInformation='', UKStatementofReasons='', Addresses=None,
-                 PhoneNumbers=None, EmailAddresses=None, IndividualDetails=None, EntityDetails=None):
+                 PhoneNumbers=None, EmailAddresses=None, IndividualDetails=None, EntityDetails=None, id = 0):
+        self.id = id
         if EntityDetails is None:
             EntityDetails = []
         self.EntityDetails = EntityDetails

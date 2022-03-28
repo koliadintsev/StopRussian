@@ -5,8 +5,9 @@ class SanctionEU(SanctionEUGeneric):
 
     def __init__(self, code='', classificationCode='P', nameAlias=None, citizenship=None, birthdate=None,
                  address=None,
-                 identification=None, delistingDate='', designationDate='', unitedNationId='', euReferenceNumber=''):
+                 identification=None, delistingDate='', designationDate='', unitedNationId='', euReferenceNumber='', id = 0):
         super().__init__()
+        self.id = id
         if identification is None:
             identification = [] #list of sactionEUIdentificationType
         if address is None:

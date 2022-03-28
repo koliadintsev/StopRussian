@@ -2,7 +2,8 @@ class SanctionUSA:
 
     def __init__(self, uid=0, firstName='', lastName='', title='', sdnType='', remarks='', programList=None,
                  idList=None, akaList=None, addressList=None, nationalityList=None, citizenshipList=None,
-                 dateOfBirthList=None, placeOfBirthList=None, vesselInfo=None):
+                 dateOfBirthList=None, placeOfBirthList=None, vesselInfo=None, id = 0):
+        self.id = id
         if vesselInfo is None:
             vesselInfo = []
         self.vesselInfo = vesselInfo #list of SanctionUSAVessel

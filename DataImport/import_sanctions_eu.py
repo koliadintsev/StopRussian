@@ -12,9 +12,11 @@ def import_data_from_xml():
     global sanctions
     #parser = etree.XMLParser(recover=True, huge_tree=True)
 
+    doc_id = 0
     for event, element in etree.iterparse(SANCTIONS_LIST, tag="{http://eu.europa.ec/fpi/fsd/export}sanctionEntity", recover=True, huge_tree=True, ):
-        import_data_from_element(element)
+        import_data_from_element(element, doc_id)
         element.clear()
+        doc_id = doc_id+1
 
     """
     tree = ET.fromstring(file.read().strip())
@@ -60,7 +62,7 @@ def find_regulation_summary(doc):
             summary.regulationType = child.get('regulationType')
     return summary
 
-def import_data_from_element(doc):
+def import_data_from_element(doc, doc_id):
     global sanctions
 
     code = ''
@@ -77,6 +79,7 @@ def import_data_from_element(doc):
 
     sanction = sanction_EU.SanctionEU()
 
+    sanction.id = doc_id
     sanction.remark = find_remark(doc)
     sanction.additionalInformation = find_additional_info(doc)
 

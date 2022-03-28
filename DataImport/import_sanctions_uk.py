@@ -11,9 +11,11 @@ def import_data_from_xml():
     global sanctions
     #parser = etree.XMLParser(recover=True, huge_tree=True)
 
+    doc_id = 0
     for event, element in etree.iterparse(SANCTIONS_LIST, tag="Designation", recover=True, huge_tree=True, ):
-        import_data_from_element(element)
+        import_data_from_element(element, doc_id)
         element.clear()
+        doc_id = doc_id + 1
 
     """
     tree = ET.fromstring(file.read().strip())
@@ -25,7 +27,7 @@ def import_data_from_xml():
     return sanctions
 
 
-def import_data_from_element(doc):
+def import_data_from_element(doc, doc_id):
     global sanctions
 
     LastUpdated = ''
@@ -47,8 +49,6 @@ def import_data_from_element(doc):
     EmailAddresses = []
     IndividualDetails = []
     EntityDetails = []
-
-    sanction = sanction_UK.SanctionUK()
 
     for item in doc.getchildren():
         #item.tag=item.tag.split('}')[-1]
@@ -233,6 +233,6 @@ def import_data_from_element(doc):
     sanction = sanction_UK.SanctionUK(LastUpdated, DateDesignated, UniqueID, OFSIGroupID, UNReferenceNumber, RegimeName,
                  Names, NonLatinNames, IndividualEntityShip, DesignationSource, SanctionsImposed,
                  SanctionsImposedIndicators, OtherInformation, UKStatementofReasons, Addresses,
-                 PhoneNumbers, EmailAddresses, IndividualDetails, EntityDetails)
+                 PhoneNumbers, EmailAddresses, IndividualDetails, EntityDetails, doc_id)
     sanctions.append(sanction)
     print(UniqueID + ' added successfully')

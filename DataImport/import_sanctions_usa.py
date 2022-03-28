@@ -12,13 +12,16 @@ def import_data_from_xml():
     global sanctions
     #parser = etree.XMLParser(recover=True, huge_tree=True)
 
+    doc_id = 0
     for event, element in etree.iterparse(SANCTIONS_SDN, tag="{http://tempuri.org/sdnList.xsd}sdnEntry", recover=True, huge_tree=True, ):
-        import_data_from_element(element)
+        import_data_from_element(element, doc_id)
         element.clear()
+        doc_id = doc_id +1
 
     for event, element in etree.iterparse(SANCTIONS_CONS, tag="{http://tempuri.org/sdnList.xsd}sdnEntry", recover=True, huge_tree=True):
-        import_data_from_element(element)
+        import_data_from_element(element, doc_id)
         element.clear()
+        doc_id = doc_id+1
 
     """
     tree = ET.fromstring(file.read().strip())
@@ -30,7 +33,7 @@ def import_data_from_xml():
     return sanctions
 
 
-def import_data_from_element(doc):
+def import_data_from_element(doc, doc_id):
     global sanctions
 
     uid = 0
@@ -48,8 +51,6 @@ def import_data_from_element(doc):
     dateOfBirthList = []
     placeOfBirthList = []
     vesselInfo = []
-
-    sanction = sanction_USA.SanctionUSA()
 
     for item in doc.getchildren():
         item.tag=item.tag.split('}')[-1]
@@ -207,6 +208,6 @@ def import_data_from_element(doc):
                 vesselInfo.append(vessel)
     sanction = sanction_USA.SanctionUSA(uid, firstName, lastName, title, sdnType, remarks, programList, idList,
                                         akaList, addressList, nationalityList, citizenshipList, dateOfBirthList,
-                                        placeOfBirthList, vesselInfo)
+                                        placeOfBirthList, vesselInfo, doc_id)
     sanctions.append(sanction)
     #print(str(uid) + ' added successfully')
