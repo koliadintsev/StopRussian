@@ -29,7 +29,7 @@ def import_data_from_xml():
     futures = [executor.submit(import_data_from_element, item, companies) for item in tree.findall('.//document')]
     concurrent.futures.wait(futures)
     """
-    print('import finished')
+#    print('import finished')
     return sanctions
 
 
@@ -102,6 +102,10 @@ def import_data_from_element(doc, doc_id):
                         aka.firstName = c.text
                     elif c.tag == 'category':
                         aka.category = c.text
+                if not aka.firstName:
+                    aka.wholeName = aka.lastName
+                else:
+                    aka.wholeName = aka.firstName + ' ' + aka.lastName
                 akaList.append(aka)
         elif item.tag == 'addressList':
             for child in item.getchildren():

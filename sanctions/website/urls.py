@@ -1,4 +1,4 @@
-"""sanctions URL Configuration
+"""website URL Configuration
 
 The `urlpatterns` list routes URLs to views. For more information please see:
     https://docs.djangoproject.com/en/4.0/topics/http/urls/
@@ -15,7 +15,10 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
+from sanctions.website import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('', views.main_view, name='main_view'),
+    path('search/', views.search, name='search_view')
 ]

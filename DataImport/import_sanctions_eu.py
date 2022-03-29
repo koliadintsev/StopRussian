@@ -24,7 +24,7 @@ def import_data_from_xml():
     futures = [executor.submit(import_data_from_element, item, companies) for item in tree.findall('.//document')]
     concurrent.futures.wait(futures)
     """
-    print('import finished')
+    #print('import finished')
     return sanctions
 
 
@@ -228,4 +228,4 @@ def import_data_from_element(doc, doc_id):
     sanction.euReferenceNumber = euReferenceNumber
 
     sanctions.append(sanction)
-    print(euReferenceNumber + ' added successfully')
+    #print(euReferenceNumber + ' added successfully')

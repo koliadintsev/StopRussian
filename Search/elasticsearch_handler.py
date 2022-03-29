@@ -9,6 +9,7 @@ from elasticsearch_dsl import connections, Index, Search, analyzer, Q
 import re
 import jsons
 from DataImport import import_sanctions_eu, import_sanctions_uk, import_sanctions_usa
+import copy
 
 from settings import STATIC_ROOT
 
@@ -26,7 +27,6 @@ api_key = "sanctions"
 api_key_pass = "Z0hHTTBIOEJURDllSmF2OHlwZ3k6cjRlTnBBbGVSTGEzLV9kczU5N1J5Zw=="
 # Found in the 'Manage Deployment' page
 #CLOUD_ID = "StopRussian:dXMtY2VudHJhbDEuZ2NwLmNsb3VkLmVzLmlvJDVjNTNjY2U0Yjk4YTQzNzI4ZDAyYWIyMzA4OGJkMDQ5JGJkZDcxZDcwZWIxNzQwZDc5ZDc2OTQ1NjQzMTM2MDA3"
-
 
 def ping(client):
     # Successful response!
@@ -74,3 +74,63 @@ def delete_index():
     client.indices.delete(index="sanctions_usa")
     client.indices.delete(index="sanctions_uk")
     client.indices.delete(index="sanctions_eu")
+
+def search_match_request(request):
+    client = initialize_client()
+    result_usa = []
+    result_uk = []
+    result_eu = []
+    query = Q("multi_match", query = request, type='cross_fields', operator='and')
+
+    s = Search(index="sanctions_usa").using(client).query(query).source(["id"])
+    s.execute()
+    for hit in s.scan():
+        result_usa.append(hit.id)
+        #print(hit.meta.index)
+
+    s = Search(index="sanctions_uk").using(client).query(query).source(["id"])
+    s.execute()
+    for hit in s.scan():
+        result_uk.append(hit.id)
+        #print(hit.meta.index)
+
+    s = Search(index="sanctions_eu").using(client).query(query).source(["id"])
+    s.execute()
+    for hit in s.scan():
+        result_eu.append(hit.id)
+        #print(hit.meta.index)
+
+    return result_usa, result_uk, result_eu
+
+
+def search_fuzzy_request(request):
+    client = initialize_client()
+    result_usa = []
+    result_uk = []
+    result_eu = []
+    query = Q("multi_match", query = request, type='best_fields', operator='and', fuzziness='AUTO')
+
+    s = Search(index="sanctions_usa").using(client).query(query).source(["id"])
+    s.execute()
+    for hit in s.scan():
+        result_usa.append(hit.id)
+        # print(hit.meta.index)
+
+    s = Search(index="sanctions_uk").using(client).query(query).source(["id"])
+    s.execute()
+    for hit in s.scan():
+        result_uk.append(hit.id)
+        # print(hit.meta.index)
+
+    s = Search(index="sanctions_eu").using(client).query(query).source(["id"])
+    s.execute()
+    for hit in s.scan():
+        result_eu.append(hit.id)
+        # print(hit.meta.index)
+
+    return result_usa, result_uk, result_eu
+
+def check():
+    client = initialize_client()
+    return client.ping()
+

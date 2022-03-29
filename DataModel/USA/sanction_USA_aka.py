@@ -6,3 +6,10 @@ class SanctionUSAAka:
         self.category = category
         self.type = type
         self.uid = uid
+        name = ''
+        if not firstName:
+            name = lastName
+        else:
+            name = firstName + ' ' + lastName
+        self.wholeName = name
+
