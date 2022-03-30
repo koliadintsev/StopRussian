@@ -1,7 +1,7 @@
 """
 Главный обработчик ElasticSearch
 """
-from elasticsearch import Elasticsearch
+from elasticsearch import Elasticsearch, exceptions
 import elasticsearch_dsl
 import concurrent.futures
 import uuid
@@ -9,6 +9,9 @@ from elasticsearch_dsl import connections, Index, Search, analyzer, Q
 import re
 import jsons
 from DataImport import import_sanctions_eu, import_sanctions_uk, import_sanctions_usa
+from DataModel.USA import sanction_USA
+from DataModel.UK import sanction_UK
+from DataModel.EU import sanction_EU
 import copy
 
 from settings import STATIC_ROOT
@@ -28,6 +31,10 @@ api_key_pass = "Z0hHTTBIOEJURDllSmF2OHlwZ3k6cjRlTnBBbGVSTGEzLV9kczU5N1J5Zw=="
 # Found in the 'Manage Deployment' page
 #CLOUD_ID = "StopRussian:dXMtY2VudHJhbDEuZ2NwLmNsb3VkLmVzLmlvJDVjNTNjY2U0Yjk4YTQzNzI4ZDAyYWIyMzA4OGJkMDQ5JGJkZDcxZDcwZWIxNzQwZDc5ZDc2OTQ1NjQzMTM2MDA3"
 
+sanctions_USA = []
+sanctions_EU = []
+sanctions_UK = []
+
 def ping(client):
     # Successful response!
     # {'name': 'instance-0000000000', 'cluster_name': ...}
@@ -45,12 +52,18 @@ def initialize_client():
 
 
 def create_index():
+    global sanctions_USA
+    global sanctions_EU
+    global sanctions_UK
+
+    delete_index()
+
+    client = initialize_client()
 
     sanctions_USA = import_sanctions_usa.import_data_from_xml()
     sanctions_EU = import_sanctions_eu.import_data_from_xml()
     sanctions_UK = import_sanctions_uk.import_data_from_xml()
 
-    client = initialize_client()
     # Создаем индекс
     client.indices.create(index="sanctions_usa")
     client.indices.create(index="sanctions_uk")
@@ -69,11 +82,16 @@ def create_index():
         dict = jsons.dump(sanction)
         client.index(index="sanctions_eu", document=dict)
 
+
 def delete_index():
     client = initialize_client()
-    client.indices.delete(index="sanctions_usa")
-    client.indices.delete(index="sanctions_uk")
-    client.indices.delete(index="sanctions_eu")
+    try:
+        client.indices.delete(index="sanctions_usa")
+        client.indices.delete(index="sanctions_uk")
+        client.indices.delete(index="sanctions_eu")
+    except exceptions.TransportError:
+        client.close()
+
 
 def search_match_request(request):
     client = initialize_client()
@@ -96,7 +114,7 @@ def search_match_request(request):
 
     s = Search(index="sanctions_eu").using(client).query(query).source(["id"])
     s.execute()
-    for hit in s.scan():
+    for hit in s:
         result_eu.append(hit.id)
         #print(hit.meta.index)
 
@@ -104,31 +122,52 @@ def search_match_request(request):
 
 
 def search_fuzzy_request(request):
+    global sanctions_USA
+    global sanctions_EU
+    global sanctions_UK
+
+    if len(sanctions_USA) == 0:
+        sanctions_USA = import_sanctions_usa.import_data_from_xml()
+        sanctions_EU = import_sanctions_eu.import_data_from_xml()
+        sanctions_UK = import_sanctions_uk.import_data_from_xml()
+
     client = initialize_client()
-    result_usa = []
-    result_uk = []
-    result_eu = []
+    search_result = []
+    result = []
+
     query = Q("multi_match", query = request, type='best_fields', operator='and', fuzziness='AUTO')
 
-    s = Search(index="sanctions_usa").using(client).query(query).source(["id"])
+    s = Search().using(client).query(query).source(["id"])
     s.execute()
-    for hit in s.scan():
-        result_usa.append(hit.id)
-        # print(hit.meta.index)
+    for hit in s:
+        res = {"index": hit.meta.index, "doc_id": hit.id}
+        search_result.append(res)
 
-    s = Search(index="sanctions_uk").using(client).query(query).source(["id"])
-    s.execute()
-    for hit in s.scan():
-        result_uk.append(hit.id)
-        # print(hit.meta.index)
+    for doc in search_result:
+        doc_id = doc["doc_id"]
+        if doc["index"] == "sanctions_usa":
+            sanction = sanctions_USA[doc_id]
+            if sanction.id != doc_id:
+                for s in sanctions_USA:
+                    if s.id == doc_id:
+                        sanction = s
+            result.append(copy.deepcopy(sanction.webify()))
+        elif doc["index"] == "sanctions_uk":
+            sanction = sanctions_UK[doc_id]
+            if sanction.id != doc_id:
+                for s in sanctions_UK:
+                    if s.id == doc_id:
+                        sanction = s
+            result.append(copy.deepcopy(sanction.webify()))
+        elif doc["index"] == "sanctions_eu":
+            sanction = sanctions_EU[doc_id]
+            if sanction.id != doc_id:
+                for s in sanctions_EU:
+                    if s.id == doc_id:
+                        sanction = s
+            result.append(copy.deepcopy(sanction.webify()))
 
-    s = Search(index="sanctions_eu").using(client).query(query).source(["id"])
-    s.execute()
-    for hit in s.scan():
-        result_eu.append(hit.id)
-        # print(hit.meta.index)
-
-    return result_usa, result_uk, result_eu
+    return result
 
 def check():
     client = initialize_client()

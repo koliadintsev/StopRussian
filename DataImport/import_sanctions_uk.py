@@ -24,6 +24,7 @@ def import_data_from_xml():
     concurrent.futures.wait(futures)
     """
     #print('import finished')
+
     return sanctions
 
 

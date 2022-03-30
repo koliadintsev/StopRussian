@@ -72,6 +72,7 @@ def import_data_from_element(doc, doc_id):
     birthdate = []
     address = []
     identification = []
+    regulation = sanction_EU_regulation.SanctionEURegulation()
     delistingDate = doc.get('delistingDate')
     designationDate = doc.get('designationDate')
     unitedNationId = doc.get('unitedNationId')
@@ -218,6 +219,7 @@ def import_data_from_element(doc, doc_id):
     sanction.code = code
     sanction.classificationCode = classificationCode
     sanction.nameAlias = nameAlias
+    sanction.regulation = regulation
     sanction.citizenship = citizenship
     sanction.birthdate = birthdate
     sanction.address = address
