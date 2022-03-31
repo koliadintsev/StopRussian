@@ -16,7 +16,8 @@ Including another URLconf
 from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import path
-from sanctions.website import views, settings
+import views
+import settings
 
 urlpatterns = [
     path('admin/', admin.site.urls),
