@@ -23,5 +23,7 @@ urlpatterns = [
     path('', views.main_view, name='main_view'),
     path('search/', views.search, name='search_view'),
     path('support/', views.support, name='support_view'),
-    path('donate/', views.donate, name='donate_view')
+    path('donate/', views.donate, name='donate_view'),
+    path('upload/', views.upload, name='upload_view')
 ]
+

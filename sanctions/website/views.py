@@ -1,6 +1,6 @@
 # Create your views here.
 from django.shortcuts import render
-from Search import elasticsearch_handler
+from sanctions.Search import elasticsearch_handler
 import re
 
 
@@ -28,3 +28,12 @@ def donate(request):
 
 def support(request):
     return render(request, 'support.html', {})
+
+
+def upload(request):
+    return render(request, 'upload.html', {'result': 'Upload lists first'})
+
+
+def create_index(request):
+    elasticsearch_handler.create_index()
+    return render(request, 'upload.html', {'result': 'Index created'})
