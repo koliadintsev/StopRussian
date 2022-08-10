@@ -1,7 +1,7 @@
 """
 Главный обработчик ElasticSearch
 """
-from elasticsearch import Elasticsearch, exceptions
+from elasticsearch import Elasticsearch, exceptions, helpers
 import elasticsearch_dsl
 import concurrent.futures
 import uuid
@@ -62,13 +62,16 @@ def create_index():
     global sanctions_EU
     global sanctions_UK
 
-    delete_index()
-
-    client = initialize_client()
-
     sanctions_USA = import_sanctions_usa.import_data_from_xml()
     sanctions_EU = import_sanctions_eu.import_data_from_xml()
     sanctions_UK = import_sanctions_uk.import_data_from_xml()
+
+    delete_index()
+
+    client = initialize_client()
+    bulk_USA = []
+    bulk_UK = []
+    bulk_EU = []
 
     # Создаем индекс
     client.indices.create(index="sanctions_usa")
@@ -78,15 +81,29 @@ def create_index():
     # Вносим имена в индекс
     for sanction in sanctions_USA:
         dict = jsons.dump(sanction)
-        client.index(index="sanctions_usa", document=dict)
+        bulk_USA.append(copy.deepcopy(dict))
 
     for sanction in sanctions_UK:
         dict = jsons.dump(sanction)
-        client.index(index="sanctions_uk", document=dict)
+        bulk_UK.append(copy.deepcopy(dict))
 
     for sanction in sanctions_EU:
         dict = jsons.dump(sanction)
-        client.index(index="sanctions_eu", document=dict)
+        bulk_EU.append(copy.deepcopy(dict))
+
+        #try:
+            #client.index(index="sanctions_eu", document=dict)
+        #except exceptions.TransportError:
+            #print('Error: ' + str(dict))
+
+    helpers.bulk(client, bulk_USA, chunk_size=1000, request_timeout=200, index='sanctions_usa')
+    helpers.bulk(client, bulk_UK, chunk_size=1000, request_timeout=200, index='sanctions_uk')
+    helpers.bulk(client, bulk_EU, chunk_size=1000, request_timeout=200, index='sanctions_eu')
+
+    #client.index(index="sanctions_usa", document=dict)
+
+    print("Indexes created")
+
 
 
 def delete_index():
